@@ -53,7 +53,7 @@ app.post("/register", (req, res) => {
     joined: new Date(),
   };
   database.users.push(newUser);
-  res.json(newUser);
+  res.status(200).json(newUser);
 });
 
 app.get("/profile/:id", (req, res) => {
@@ -63,13 +63,20 @@ app.get("/profile/:id", (req, res) => {
       return res.status(200).json(user);
     }
   });
-  res.status(404).json("not found");
+  res.status(400).json("not found");
+});
+
+app.post("/image", (req, res) => {
+  const { id } = req.body;
+  database.users.forEach((user) => {
+    if (id === user.id) {
+      user.entries++;
+      return res.json(user.entries);
+    }
+  });
+  res.status(400).json("not found");
 });
 
 app.listen(3000, () => {
   console.log("smart-brain-api is listening on port 3000");
 });
-
-/*
-/image -> PUT, return user
-*/
