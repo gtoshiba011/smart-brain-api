@@ -56,14 +56,20 @@ app.post("/register", (req, res) => {
   res.json(newUser);
 });
 
+app.get("/profile/:id", (req, res) => {
+  const { id } = req.params;
+  database.users.forEach((user) => {
+    if (id === user.id) {
+      return res.status(200).json(user);
+    }
+  });
+  res.status(404).json("not found");
+});
+
 app.listen(3000, () => {
   console.log("smart-brain-api is listening on port 3000");
 });
 
 /*
-/ -> root
-/signin -> POST, return success/fail
-/register -> POST, return user
-/profile/:userId -> GET, return user
 /image -> PUT, return user
 */
