@@ -22,6 +22,8 @@ const db = knex({
     database: "smart-brain",
   },
 });
+// CREATE TABLE login (id serial PRIMARY KEY, hash VARCHAR(100) NOT NULL, email text UNIQUE NOT NULL);
+// CREATE TABLE users (id serial PRIMARY KEY, name VARCHAR(100), email text UNIQUE NOT NULL, entries bigint DEFAULT 0, joined TIMESTAMP NOT NULL);
 
 const database = {
   users: [
@@ -69,29 +71,34 @@ app.post("/signin", (req, res) => {
 
 app.post("/register", (req, res) => {
   const { name, email, password } = req.body;
-  bcrypt.hash(password, saltRounds, function (err, hash) {
-    const newUser = {
-      id: "125",
-      name: name,
-      email: email,
-      password: hash,
-      entries: 0,
-      joined: new Date(),
-    };
-    // database.users.push(newUser);
-    db("users")
-      .returning("*")
+  const hash = bcrypt.hashSync(password, saltRounds);
+
+  // Using trx as a transaction object:
+  db.transaction((trx) => {
+    trx
       .insert({
-        name: name,
         email: email,
-        joined: new Date(),
+        hash: hash,
       })
-      .then((response) => {
-        res.json(response);
+      .into("login")
+      .returning("email")
+      .then((loginEmail) => {
+        return trx("users")
+          .insert({
+            name: name,
+            email: loginEmail[0],
+            joined: new Date(),
+          })
+          .returning("*")
+          .then((user) => {
+            res.json(user[0]);
+          });
       })
-      .catch((err) => {
-        res.status(400).json("unable to register");
-      });
+      .then(trx.commit)
+      .catch(trx.rollback);
+  }).catch((err) => {
+    console.log(err);
+    res.status(400).json("register transaction fail");
   });
 });
 
