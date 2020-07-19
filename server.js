@@ -25,48 +25,34 @@ const db = knex({
 // CREATE TABLE login (id serial PRIMARY KEY, hash VARCHAR(100) NOT NULL, email text UNIQUE NOT NULL);
 // CREATE TABLE users (id serial PRIMARY KEY, name VARCHAR(100), email text UNIQUE NOT NULL, entries bigint DEFAULT 0, joined TIMESTAMP NOT NULL);
 
-const database = {
-  users: [
-    {
-      id: "123",
-      name: "John",
-      email: "john@gmail.com",
-      password: "123",
-      entries: 0,
-      joined: new Date(),
-    },
-    {
-      id: "124",
-      name: "Sally",
-      email: "sally@gmail.com",
-      password: "124", // 123
-      entries: 0,
-      joined: new Date(),
-    },
-  ],
-};
-
-// conver plaintext to hash
-database.users.forEach((user) => {
-  bcrypt.hash(user.password, saltRounds, (err, hash) => {
-    user.password = hash;
-  });
-});
-
 app.get("/", (req, res) => {
-  res.send(database.users);
+  db.select("*")
+    .from("users")
+    .then((users) => res.send(users))
+    .catch((err) => res.status(400).send("error"));
 });
 
 app.post("/signin", (req, res) => {
   const { email, password } = req.body;
-  for (let user of database.users) {
-    if (email === user.email) {
-      return bcrypt.compareSync(password, user.password)
-        ? res.json(user)
-        : res.json("password fail");
-    }
-  }
-  res.json("email fail");
+  db.select("email", "hash")
+    .from("login")
+    .where({ email: email })
+    .then((user) => {
+      if (user.length) {
+        if (bcrypt.compareSync(password, user[0].hash)) {
+          return db
+            .select("*")
+            .from("users")
+            .where({ email: email })
+            .then((user) => res.json(user[0]));
+        } else {
+          res.json("wrong password");
+        }
+      } else {
+        res.json("wrong email");
+      }
+    })
+    .catch((err) => res.json("signin fail"));
 });
 
 app.post("/register", (req, res) => {
