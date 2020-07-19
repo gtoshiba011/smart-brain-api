@@ -72,12 +72,12 @@ app.post("/register", (req, res) => {
 
 app.get("/profile/:id", (req, res) => {
   const { id } = req.params;
-  database.users.forEach((user) => {
+  for (let user of database.users) {
     if (id === user.id) {
-      return res.status(200).json(user);
+      return res.json(user);
     }
-  });
-  res.status(400).json("not found");
+  }
+  return res.json("not found");
 });
 
 app.put("/image", (req, res) => {
