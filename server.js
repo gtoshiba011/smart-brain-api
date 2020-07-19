@@ -36,15 +36,10 @@ app.get("/", (req, res) => {
     .catch((err) => res.status(400).send("error"));
 });
 
-app.post("/signin", (req, res) => signin.handleSignin(req, res, db, bcrypt));
-
-app.post("/register", (req, res) =>
-  register.handleRegister(req, res, db, bcrypt, saltRounds)
-);
-
-app.get("/profile/:id", (req, res) => profile.handleProfile(req, res, db));
-
-app.put("/image", (req, res) => image.handleImage(req, res, db));
+app.post("/signin", signin.handleSignin(db, bcrypt));
+app.post("/register", register.handleRegister(db, bcrypt, saltRounds));
+app.get("/profile/:id", profile.handleProfile(db));
+app.put("/image", image.handleImage(db));
 
 app.listen(3000, () => {
   console.log("smart-brain-api is listening on port 3000");

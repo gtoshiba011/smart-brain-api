@@ -1,4 +1,4 @@
-const handleRegister = (req, res, db, bcrypt, saltRounds) => {
+const handleRegister = (db, bcrypt, saltRounds) => (req, res) => {
   const { name, email, password } = req.body;
   const hash = bcrypt.hashSync(password, saltRounds);
 
