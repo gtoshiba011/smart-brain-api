@@ -3,7 +3,11 @@ const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const cors = require("cors");
 const knex = require("knex");
-const { response } = require("express");
+
+const register = require("./controllers/register");
+const signin = require("./controllers/signin");
+const profile = require("./controllers/profile");
+const image = require("./controllers/image");
 
 const app = express();
 
@@ -32,93 +36,15 @@ app.get("/", (req, res) => {
     .catch((err) => res.status(400).send("error"));
 });
 
-app.post("/signin", (req, res) => {
-  const { email, password } = req.body;
-  db.select("email", "hash")
-    .from("login")
-    .where({ email: email })
-    .then((user) => {
-      if (user.length) {
-        if (bcrypt.compareSync(password, user[0].hash)) {
-          return db
-            .select("*")
-            .from("users")
-            .where({ email: email })
-            .then((user) => res.json(user[0]));
-        } else {
-          res.json("wrong password");
-        }
-      } else {
-        res.json("wrong email");
-      }
-    })
-    .catch((err) => res.json("signin fail"));
-});
+app.post("/signin", (req, res) => signin.handleSignin(req, res, db, bcrypt));
 
-app.post("/register", (req, res) => {
-  const { name, email, password } = req.body;
-  const hash = bcrypt.hashSync(password, saltRounds);
+app.post("/register", (req, res) =>
+  register.handleRegister(req, res, db, bcrypt, saltRounds)
+);
 
-  // Using trx as a transaction object:
-  db.transaction((trx) => {
-    trx
-      .insert({
-        email: email,
-        hash: hash,
-      })
-      .into("login")
-      .returning("email")
-      .then((loginEmail) => {
-        return trx("users")
-          .insert({
-            name: name,
-            email: loginEmail[0],
-            joined: new Date(),
-          })
-          .returning("*")
-          .then((user) => {
-            res.json(user[0]);
-          });
-      })
-      .then(trx.commit)
-      .catch(trx.rollback);
-  }).catch((err) => {
-    console.log(err);
-    res.status(400).json("register transaction fail");
-  });
-});
+app.get("/profile/:id", (req, res) => profile.handleProfile(req, res, db));
 
-app.get("/profile/:id", (req, res) => {
-  const { id } = req.params;
-  db.select("*")
-    .from("users")
-    .where({ id: id })
-    .then((user) => {
-      if (user.length) {
-        res.json(user[0]);
-      } else {
-        res.status(400).json("not found");
-      }
-    })
-    .catch((err) => res.status(400).json("error getting user"));
-});
-
-app.put("/image", (req, res) => {
-  const { id } = req.body;
-  db.select("entries")
-    .from("users")
-    .where({ id: id })
-    .increment("entries", 1)
-    .returning("entries")
-    .then((entries) => {
-      if (entries.length) {
-        res.json(Number(entries[0]));
-      } else {
-        res.status(400).json("not found");
-      }
-    })
-    .catch((err) => res.status(400).json("error getting entries"));
-});
+app.put("/image", (req, res) => image.handleImage(req, res, db));
 
 app.listen(3000, () => {
   console.log("smart-brain-api is listening on port 3000");
