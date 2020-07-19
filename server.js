@@ -14,7 +14,7 @@ const app = express();
 // middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(cors()); 
+app.use(cors());
 
 // setup database (Postgres)
 const db = knex({
@@ -40,6 +40,7 @@ app.post("/signin", signin.handleSignin(db, bcrypt));
 app.post("/register", register.handleRegister(db, bcrypt, saltRounds));
 app.get("/profile/:id", profile.handleProfile(db));
 app.put("/image", image.handleImage(db));
+app.post("/imageApi", image.handleApiCall);
 
 app.listen(3000, () => {
   console.log("smart-brain-api is listening on port 3000");
