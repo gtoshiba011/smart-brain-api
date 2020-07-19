@@ -1,4 +1,6 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 
 const app = express();
 
@@ -20,12 +22,19 @@ const database = {
       id: "124",
       name: "Sally",
       email: "sally@gmail.com",
-      password: "123",
+      password: "124", // 123
       entries: 0,
       joined: new Date(),
     },
   ],
 };
+
+// conver plaintext to hash
+database.users.forEach((user) => {
+  bcrypt.hash(user.password, saltRounds, (err, hash) => {
+    user.password = hash;
+  });
+});
 
 app.get("/", (req, res) => {
   res.send(database.users);
@@ -34,26 +43,29 @@ app.get("/", (req, res) => {
 app.post("/signin", (req, res) => {
   const { email, password } = req.body;
   for (let user of database.users) {
-    if (email === user.email && password === user.password) {
-      res.status(200).json("success");
-      return;
+    if (email === user.email) {
+      return bcrypt.compareSync(password, user.password)
+        ? res.status(200).json("success")
+        : res.status(400).json("password fail");
     }
   }
-  res.status(400).json("fail");
+  res.status(400).json("email fail");
 });
 
 app.post("/register", (req, res) => {
   const { name, email, password } = req.body;
-  const newUser = {
-    id: "125",
-    name: name,
-    email: email,
-    password: password,
-    entries: 0,
-    joined: new Date(),
-  };
-  database.users.push(newUser);
-  res.status(200).json(newUser);
+  bcrypt.hash(password, saltRounds, function (err, hash) {
+    const newUser = {
+      id: "125",
+      name: name,
+      email: email,
+      password: hash,
+      entries: 0,
+      joined: new Date(),
+    };
+    database.users.push(newUser);
+    res.status(200).json(newUser);
+  });
 });
 
 app.get("/profile/:id", (req, res) => {
