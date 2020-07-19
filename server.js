@@ -1,12 +1,14 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
+const cors = require("cors");
 
 const app = express();
 
 // middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(cors());
 
 const database = {
   users: [
@@ -45,11 +47,11 @@ app.post("/signin", (req, res) => {
   for (let user of database.users) {
     if (email === user.email) {
       return bcrypt.compareSync(password, user.password)
-        ? res.status(200).json("success")
-        : res.status(400).json("password fail");
+        ? res.json(user)
+        : res.json("password fail");
     }
   }
-  res.status(400).json("email fail");
+  res.json("email fail");
 });
 
 app.post("/register", (req, res) => {
@@ -78,7 +80,7 @@ app.get("/profile/:id", (req, res) => {
   res.status(400).json("not found");
 });
 
-app.post("/image", (req, res) => {
+app.put("/image", (req, res) => {
   const { id } = req.body;
   database.users.forEach((user) => {
     if (id === user.id) {
