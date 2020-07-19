@@ -2,6 +2,8 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const cors = require("cors");
+const knex = require("knex");
+const { response } = require("express");
 
 const app = express();
 
@@ -9,6 +11,17 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors());
+
+// setup database (Postgres)
+const db = knex({
+  client: "pg",
+  connection: {
+    host: "127.0.0.1",
+    user: "",
+    password: "",
+    database: "smart-brain",
+  },
+});
 
 const database = {
   users: [
@@ -65,23 +78,41 @@ app.post("/register", (req, res) => {
       entries: 0,
       joined: new Date(),
     };
-    database.users.push(newUser);
-    res.status(200).json(newUser);
+    // database.users.push(newUser);
+    db("users")
+      .returning("*")
+      .insert({
+        name: name,
+        email: email,
+        joined: new Date(),
+      })
+      .then((response) => {
+        res.json(response);
+      })
+      .catch((err) => {
+        res.status(400).json("unable to register");
+      });
   });
 });
 
 app.get("/profile/:id", (req, res) => {
   const { id } = req.params;
-  for (let user of database.users) {
-    if (id === user.id) {
-      return res.json(user);
-    }
-  }
-  return res.json("not found");
+  db.select("*")
+    .from("users")
+    .where({ id: id })
+    .then((user) => {
+      if (user.length) {
+        res.json(user[0]);
+      } else {
+        res.status(400).json("not found");
+      }
+    })
+    .catch((err) => res.status(400).json("error getting user"));
 });
 
 app.put("/image", (req, res) => {
   const { id } = req.body;
+  db;
   database.users.forEach((user) => {
     if (id === user.id) {
       user.entries++;
