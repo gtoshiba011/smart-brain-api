@@ -1,7 +1,12 @@
 const handleRegister = (db, bcrypt, saltRounds) => (req, res) => {
   const { name, email, password } = req.body;
-  const hash = bcrypt.hashSync(password, saltRounds);
 
+  // validate register information
+  if (!name || !email || !password) {
+    return res.status(400).json("invalid register information");
+  }
+
+  const hash = bcrypt.hashSync(password, saltRounds);
   // Using trx as a transaction object:
   db.transaction((trx) => {
     trx

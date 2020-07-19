@@ -1,5 +1,11 @@
 const handleSignin = (db, bcrypt) => (req, res) => {
   const { email, password } = req.body;
+
+  // validate signin information
+  if (!email || !password) {
+    return res.status(400).json("invalid signin information");
+  }
+
   db.select("email", "hash")
     .from("login")
     .where({ email: email })
