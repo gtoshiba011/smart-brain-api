@@ -42,6 +42,7 @@ app.get("/profile/:id", profile.handleProfile(db));
 app.put("/image", image.handleImage(db));
 app.post("/imageApi", image.handleApiCall);
 
-app.listen(3000, () => {
-  console.log("smart-brain-api is listening on port 3000");
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`smart-brain-api is listening on port ${port}`);
 });
