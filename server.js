@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const cors = require("cors");
 const knex = require("knex");
+const morgan = require("morgan");
 
 const register = require("./controllers/register");
 const signin = require("./controllers/signin");
@@ -15,6 +16,7 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors());
+app.use(morgan("combined"));
 
 // setup database (Postgres)
 const db = knex({
@@ -30,10 +32,11 @@ const db = knex({
 // CREATE TABLE users (id serial PRIMARY KEY, name VARCHAR(100), email text UNIQUE NOT NULL, entries bigint DEFAULT 0, joined TIMESTAMP NOT NULL);
 
 app.get("/", (req, res) => {
-  db.select("*")
-    .from("users")
-    .then((users) => res.send(users))
-    .catch((err) => res.status(400).send("error"));
+  res.send("it works in Docker");
+  // db.select("*")
+  //   .from("users")
+  //   .then((users) => res.send(users))
+  //   .catch((err) => res.status(400).send("error"));
 });
 
 app.post("/signin", signin.handleSignin(db, bcrypt));
