@@ -13,30 +13,31 @@ services:
 
     # run the command when starting run this service
     command: npm run start:dev
-    # run multiple commands
     # command: >
     #   bash -c "npm install
     #   && npm run start:dev"
 
     working_dir: /usr/src/smart-brain-api
     environment:
-      POSTGRES_URL: postgres://@postgres:5432/smart-brain-docker
-      # POSTGRES_URL: postgres://@postgres:5432/smart-brain-docker
+      POSTGRES_URL: postgres://howard:secret@postgres:5432/smart-brain-docker
+
     # links:
-    # - postgres
+    #   - postgres
+
     ports:
       - "3000:3000"
+
     volumes: # mount local machine to docker container
       - ./:/usr/src/smart-brain-api
 
   # Postgres
   postgres:
     # no need container_name if using image
-    container_name: database
+    # container_name: database
 
     environment:
-      # POSTGRES_USER: howard
-      # POSTGRES_PASSWORD: secret
+      POSTGRES_USER: howard
+      POSTGRES_PASSWORD: secret
       POSTGRES_DB: smart-brain-docker
       POSTGRES_HOST: postgres
 

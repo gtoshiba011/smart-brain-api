@@ -18,15 +18,22 @@ app.use(express.json());
 app.use(cors());
 app.use(morgan("combined"));
 
+console.log(bcrypt.hashSync("123", saltRounds));
+
 // setup database (Postgres)
 const db = knex({
   client: "pg",
-  connection: {
-    host: "127.0.0.1",
-    user: "",
-    password: "",
-    database: "smart-brain",
-  },
+  connection: process.env.POSTGRES_URL,
+  // connection: {
+  // host: process.env.POSTGRES_HOST,
+  // user: process.env.POSTGRES_USER,
+  // password: process.env.POSTGRES_PASSWORD,
+  // database: procesws.env.POSTGRES_DB,
+  // host: "127.0.0.1",
+  // user: "",
+  // password: "",
+  // database: "smart-brain",
+  // },
 });
 // CREATE TABLE login (id serial PRIMARY KEY, hash VARCHAR(100) NOT NULL, email text UNIQUE NOT NULL);
 // CREATE TABLE users (id serial PRIMARY KEY, name VARCHAR(100), email text UNIQUE NOT NULL, entries bigint DEFAULT 0, joined TIMESTAMP NOT NULL);
