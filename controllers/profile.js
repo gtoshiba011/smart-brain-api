@@ -1,4 +1,4 @@
-const handleProfile = (db) => (req, res) => {
+const handleProfileGet = (db) => (req, res) => {
   const { id } = req.params;
   db.select("*")
     .from("users")
@@ -13,6 +13,25 @@ const handleProfile = (db) => (req, res) => {
     .catch((err) => res.status(400).json("error getting user"));
 };
 
+const handleProfileUpdate = (req, res, db) => {
+  const { id } = req.params;
+  // TOOD: check id exists
+
+  const { name, age, pet } = req.body.formInput;
+  db.from("users")
+    .where({ id })
+    .update({ name, age, pet })
+    .then((resp) => {
+      if (resp) {
+        res.json("success");
+      } else {
+        res.status(400).json("unable to update");
+      }
+    })
+    .catch((err) => res.status(400).json("error updating user"));
+};
+
 module.exports = {
-  handleProfile,
+  handleProfileGet,
+  handleProfileUpdate,
 };

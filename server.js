@@ -18,8 +18,6 @@ app.use(express.json());
 app.use(cors());
 app.use(morgan("combined"));
 
-console.log(bcrypt.hashSync("123", saltRounds));
-
 // setup database (Postgres)
 const db = knex({
   client: "pg",
@@ -48,7 +46,8 @@ app.get("/", (req, res) => {
 
 app.post("/signin", signin.handleSignin(db, bcrypt));
 app.post("/register", register.handleRegister(db, bcrypt, saltRounds));
-app.get("/profile/:id", profile.handleProfile(db));
+app.get("/profile/:id", profile.handleProfileGet(db));
+app.post("/profile/:id", (req, res) => { profile.handleProfileUpdate(req, res, db) })
 app.put("/image", image.handleImage(db));
 app.post("/imageApi", image.handleApiCall);
 
