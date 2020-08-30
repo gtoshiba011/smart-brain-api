@@ -44,7 +44,7 @@ app.get("/", (req, res) => {
   //   .catch((err) => res.status(400).send("error"));
 });
 
-app.post("/signin", signin.handleSignin(db, bcrypt));
+app.post("/signin", signin.signinAuthentication(db, bcrypt));
 app.post("/register", register.handleRegister(db, bcrypt, saltRounds));
 app.get("/profile/:id", profile.handleProfileGet(db));
 app.post("/profile/:id", (req, res) => { profile.handleProfileUpdate(req, res, db) })
