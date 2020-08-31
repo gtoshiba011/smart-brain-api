@@ -36,8 +36,15 @@ const handleSignin = (db, bcrypt, req, res) => {
     .catch((err) => Promise.reject(err));
 };
 
-const getAuthTokenId = () => {
-  console.log("auth OK");
+const getAuthTokenId = (req, res) => {
+  const { authentication } = req.headers;
+  return redisClient.get(authentication, (err, reply) => {
+    if (err || !reply) {
+      return res.status(401).json("Unauthorized");
+    } else {
+      return res.json({ userId: reply });
+    }
+  });
 };
 
 const signToken = (email) => {
@@ -45,17 +52,26 @@ const signToken = (email) => {
   return jwt.sign(jwtPayload, "JWT_SECRET", { expiresIn: "2 days" });
 };
 
+// return a promise
+const redisSet = (key, value) => {
+  return Promise.resolve(redisClient.set(key, value));
+};
+
 const createSessions = (user) => {
   // JWT token, return user data
   const { email, id } = user;
   const token = signToken(email);
-  return { success: "true", userId: id, token };
+  return redisSet(token, id)
+    .then(() => {
+      return { success: "true", userId: id, token };
+    })
+    .catch(console.log);
 };
 
 const signinAuthentication = (db, bcrypt) => (req, res) => {
-  const { authorization } = req.headers;
-  return authorization
-    ? getAuthTokenId()
+  const { authentication } = req.headers;
+  return authentication
+    ? getAuthTokenId(req, res)
     : handleSignin(db, bcrypt, req, res)
         .then((data) => {
           return data.id && data.email
