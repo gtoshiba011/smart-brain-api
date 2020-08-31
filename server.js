@@ -21,7 +21,7 @@ app.use(morgan("combined"));
 // setup database (Postgres)
 const db = knex({
   client: "pg",
-  connection: process.env.POSTGRES_URL,
+  connection: process.env.POSTGRES_URI,
   // connection: {
   // host: process.env.POSTGRES_HOST,
   // user: process.env.POSTGRES_USER,
@@ -47,7 +47,9 @@ app.get("/", (req, res) => {
 app.post("/signin", signin.signinAuthentication(db, bcrypt));
 app.post("/register", register.handleRegister(db, bcrypt, saltRounds));
 app.get("/profile/:id", profile.handleProfileGet(db));
-app.post("/profile/:id", (req, res) => { profile.handleProfileUpdate(req, res, db) })
+app.post("/profile/:id", (req, res) => {
+  profile.handleProfileUpdate(req, res, db);
+});
 app.put("/image", image.handleImage(db));
 app.post("/imageApi", image.handleApiCall);
 

@@ -19,10 +19,13 @@ services:
 
     working_dir: /usr/src/smart-brain-api
     environment:
-      POSTGRES_URL: postgres://howard:secret@postgres:5432/smart-brain-docker
+      POSTGRES_URI: postgres://howard:secret@postgres:5432/smart-brain-docker
+      REDIS_URI: redis://redis:6379
 
+    # do not need links; it will connect automatically
     # links:
     #   - postgres
+    #   - redis
 
     ports:
       - "3000:3000"
@@ -35,14 +38,24 @@ services:
     # no need container_name if using image
     # container_name: database
 
+    # environment variable
     environment:
       POSTGRES_USER: howard
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: smart-brain-docker
       POSTGRES_HOST: postgres
 
+    # no need image bacause there is build
     # image: postgres
+
     build: ./postgres
 
     ports:
       - "5432:5432"
+
+# Redis
+  redis:
+    image: redis
+  
+    ports:
+      - "6379:6379"

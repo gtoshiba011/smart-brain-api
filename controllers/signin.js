@@ -1,4 +1,9 @@
 const jwt = require("jsonwebtoken");
+const redis = require("redis");
+
+// setup Redis
+const redisClient = redis.createClient(process.env.REDIS_URI);
+
 // only return promise instead of response
 // return response in signinAuthentication
 const handleSignin = (db, bcrypt, req, res) => {
