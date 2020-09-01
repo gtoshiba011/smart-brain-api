@@ -9,6 +9,7 @@ const register = require("./controllers/register");
 const signin = require("./controllers/signin");
 const profile = require("./controllers/profile");
 const image = require("./controllers/image");
+const auth = require("./middleware/authorization");
 
 const app = express();
 
@@ -46,12 +47,12 @@ app.get("/", (req, res) => {
 
 app.post("/signin", signin.signinAuthentication(db, bcrypt));
 app.post("/register", register.handleRegister(db, bcrypt, saltRounds));
-app.get("/profile/:id", profile.handleProfileGet(db));
-app.post("/profile/:id", (req, res) => {
+app.get("/profile/:id", auth.requireAuth, profile.handleProfileGet(db));
+app.post("/profile/:id", auth.requireAuth, (req, res) => {
   profile.handleProfileUpdate(req, res, db);
 });
-app.put("/image", image.handleImage(db));
-app.post("/imageApi", image.handleApiCall);
+app.put("/image", auth.requireAuth, image.handleImage(db));
+app.post("/imageApi", auth.requireAuth, image.handleApiCall);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
